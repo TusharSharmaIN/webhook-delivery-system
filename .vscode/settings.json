@@ -1,0 +1,21 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "folder-color.pathColors": [
+    {
+      "folderPath": "webhook-delivery-system/services/event-source/",
+      "color": "foldercolorizer.color_00af00"
+    },
+    {
+      "folderPath": "webhook-delivery-system/services/receiver/",
+      "color": "foldercolorizer.color_ff8700"
+    },
+    {
+      "folderPath": "webhook-delivery-system/services/core-api/",
+      "color": "foldercolorizer.color_5f5fff"
+    }
+  ]
+}
