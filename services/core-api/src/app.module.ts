@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomersModule } from './customers/customers.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EventsModule } from './events/events.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -25,6 +26,16 @@ import { EventsModule } from './events/events.module';
         database: config.get('DB_NAME'),
         autoLoadEntities: true,
         synchronize: false,
+      }),
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get('REDIS_HOST', 'redis'),
+          port: Number(config.get('REDIS_PORT', 6379)),
+        },
       }),
     }),
     HealthModule,

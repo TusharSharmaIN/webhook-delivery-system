@@ -37,11 +37,13 @@ services:
       DB_USER: webhook
       DB_PASSWORD: webhook
       DB_NAME: webhook_delivery
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "3000:3000"
     volumes:
       - ./services/core-api:/app
-      - /app/node_modules
+      - core-api-node-modules:/app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,11 +56,12 @@ services:
     environment:
       PORT: 3001
       CORE_API_URL: http://core-api:3000
+      EVENT_INTERVAL_MS: 10000
     ports:
       - "3001:3001"
     volumes:
       - ./services/event-source:/app
-      - /app/node_modules
+      - event-source-node-modules:/app/node_modules
     depends_on:
       - core-api
 
@@ -71,9 +74,12 @@ services:
       - "3002:3002"
     volumes:
       - ./services/receiver:/app
-      - /app/node_modules
+      - receiver-node-modules:/app/node_modules
     depends_on:
       - core-api
 
 volumes:
   pgdata:
+  core-api-node-modules:
+  event-source-node-modules:
+  receiver-node-modules:
