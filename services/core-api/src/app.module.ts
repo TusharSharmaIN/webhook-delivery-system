@@ -8,6 +8,7 @@ import { CustomersModule } from './customers/customers.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EventsModule } from './events/events.module';
 import { BullModule } from '@nestjs/bullmq';
+import { DeliveryModule } from './delivery/delivery.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { BullModule } from '@nestjs/bullmq';
     CustomersModule,
     SubscriptionsModule,
     EventsModule,
+    DeliveryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

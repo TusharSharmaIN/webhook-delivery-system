@@ -1,0 +1,58 @@
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiProperty } from '@nestjs/swagger';
+import { IsString, IsIn } from 'class-validator';
+import {
+  ReceiverConfigService,
+  type FailureMode,
+} from './receiver-config.service';
+
+class SetSecretDto {
+  @ApiProperty({
+    example: 'a099dee62e12841c294fa3d3c4d82d368ecb533f33d62d0e6a72ca3602b47002',
+  })
+  @IsString()
+  secret: string;
+}
+
+class SetFailureModeDto {
+  @ApiProperty({
+    example: 'none',
+    enum: ['none', 'always-fail', 'slow', 'down'],
+  })
+  @IsIn(['none', 'always-fail', 'slow', 'down'])
+  mode: FailureMode;
+}
+
+@ApiTags('config')
+@Controller('config')
+export class ConfigController {
+  constructor(private readonly configService: ReceiverConfigService) {}
+
+  @Post('secret')
+  @ApiOperation({
+    summary:
+      'Set the expected HMAC secret (simulates a customer knowing their key)',
+  })
+  setSecret(@Body() dto: SetSecretDto) {
+    this.configService.setSecret(dto.secret);
+    return { message: 'Secret updated' };
+  }
+
+  @Post('failure-mode')
+  @ApiOperation({
+    summary: 'Simulate receiver failure: none | always-fail | slow | down',
+  })
+  setFailureMode(@Body() dto: SetFailureModeDto) {
+    this.configService.setFailureMode(dto.mode);
+    return { message: `Failure mode set to ${dto.mode}` };
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'View current receiver config' })
+  getConfig() {
+    return {
+      hasSecret: !!this.configService.getSecret(),
+      failureMode: this.configService.getFailureMode(),
+    };
+  }
+}

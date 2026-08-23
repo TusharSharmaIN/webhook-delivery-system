@@ -1,9 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { json } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Capture raw body for HMAC signature verification, while still
+  // parsing JSON normally for any endpoint that needs req.body.
+  app.use(
+    json({
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Receiver (fake webhook subscriber)')

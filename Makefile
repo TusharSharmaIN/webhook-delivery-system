@@ -41,3 +41,9 @@ clean: ## Stop everything and wipe volumes (DB data included) — full reset
  
 test: ## Placeholder — real test commands land per-phase
 	@echo "No automated tests yet — Phase 1 is verified manually via health checks."
+
+rebuild-%: ## Force-rebuild a service with a clean node_modules volume, e.g. `make rebuild-core-api`
+	docker compose stop $*
+	docker volume rm webhook-delivery-system_$*-node-modules
+	docker compose up -d --build $*
+	docker compose logs -f $*
