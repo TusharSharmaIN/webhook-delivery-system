@@ -28,12 +28,19 @@ export class EventsService {
 
     const jobs = await Promise.all(
       matchingSubscriptions.map((sub) =>
-        this.deliveryQueue.add('deliver-webhook', {
-          eventId: saved.id,
-          customerId: sub.customerId,
-          eventType: saved.type,
-          payload: saved.payload,
-        }),
+        this.deliveryQueue.add(
+          'deliver-webhook',
+          {
+            eventId: saved.id,
+            customerId: sub.customerId,
+            eventType: saved.type,
+            payload: saved.payload,
+          },
+          {
+            attempts: 3,
+            backoff: { type: 'custom' },
+          },
+        ),
       ),
     );
 

@@ -12,6 +12,7 @@ import {
 } from '../delivery-attempts/delivery-attempt.entity';
 import { signPayload } from '../common/signing.util';
 import { AxiosResponse } from 'axios';
+import { exponentialBackoffWithJitter } from './backoff.strategy';
 
 interface DeliverWebhookJobData {
   eventId: string;
@@ -20,7 +21,12 @@ interface DeliverWebhookJobData {
   payload: Record<string, any>;
 }
 
-@Processor('delivery')
+@Processor('delivery', {
+  settings: {
+    backoffStrategy: (attemptsMade: number) =>
+      exponentialBackoffWithJitter(attemptsMade),
+  },
+})
 export class DeliveryProcessor extends WorkerHost {
   private readonly logger = new Logger(DeliveryProcessor.name);
 
@@ -76,23 +82,30 @@ export class DeliveryProcessor extends WorkerHost {
     } catch (err: any) {
       const responseCode = err.response?.status ?? null;
       const errorMessage = err.message ?? 'Unknown error';
+      const isLastAttempt = attemptNumber >= (job.opts.attempts ?? 1);
 
       await this.attemptsRepo.save(
         this.attemptsRepo.create({
           eventId,
           customerId,
           attemptNumber,
-          status: DeliveryStatus.RETRYING, // Phase 5 will refine this based on remaining attempts
+          status: isLastAttempt ? DeliveryStatus.DEAD : DeliveryStatus.RETRYING,
           responseCode,
           error: errorMessage,
         }),
       );
 
-      this.logger.warn(
-        `Delivery failed for event ${eventId} to ${customer.name} (attempt ${attemptNumber}): ${errorMessage}`,
-      );
+      if (isLastAttempt) {
+        this.logger.error(
+          `Delivery permanently failed for event ${eventId} to ${customer.name} after ${attemptNumber} attempts — moving to DLQ`,
+        );
+      } else {
+        this.logger.warn(
+          `Delivery failed for event ${eventId} to ${customer.name} (attempt ${attemptNumber}/${job.opts.attempts}): ${errorMessage}`,
+        );
+      }
 
-      throw err; // re-throw so BullMQ knows this job failed and should retry (Phase 5 tunes retry policy)
+      throw err;
     }
   }
 }
