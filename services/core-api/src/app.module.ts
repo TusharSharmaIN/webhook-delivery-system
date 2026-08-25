@@ -9,6 +9,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EventsModule } from './events/events.module';
 import { BullModule } from '@nestjs/bullmq';
 import { DeliveryModule } from './delivery/delivery.module';
+import { DeadLetterModule } from './dead-letter/dead-letter.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { DeliveryModule } from './delivery/delivery.module';
     SubscriptionsModule,
     EventsModule,
     DeliveryModule,
+    DeadLetterModule,
   ],
   controllers: [AppController],
   providers: [AppService],
