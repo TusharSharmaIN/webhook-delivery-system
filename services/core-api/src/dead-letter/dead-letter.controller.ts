@@ -43,6 +43,26 @@ export class DeadLetterController {
     }));
   }
 
+  @Get('stats/summary')
+  @ApiOperation({ summary: 'Basic delivery statistics across all events' })
+  async getStats() {
+    const [total, delivered, retrying, dead] = await Promise.all([
+      this.attemptsRepo.count(),
+      this.attemptsRepo.count({ where: { status: DeliveryStatus.DELIVERED } }),
+      this.attemptsRepo.count({ where: { status: DeliveryStatus.RETRYING } }),
+      this.attemptsRepo.count({ where: { status: DeliveryStatus.DEAD } }),
+    ]);
+
+    return {
+      totalAttempts: total,
+      delivered,
+      retrying,
+      dead,
+      successRate:
+        total > 0 ? Math.round((delivered / total) * 10000) / 100 : 0,
+    };
+  }
+
   @Get(':eventId/history')
   @ApiOperation({ summary: 'Full delivery attempt history for one event' })
   async getHistory(@Param('eventId') eventId: string) {

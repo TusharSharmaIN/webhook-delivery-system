@@ -18,11 +18,14 @@ export class HealthController {
     } catch {
       dbStatus = 'down';
     }
+
     return {
       status: dbStatus === 'up' ? 'ok' : 'degraded',
       service: 'core-api',
       timestamp: new Date().toISOString(),
-      dependencies: { postgres: dbStatus },
+      dependencies: {
+        postgres: dbStatus,
+      },
     };
   }
 }

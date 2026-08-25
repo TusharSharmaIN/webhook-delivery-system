@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -13,6 +14,22 @@ import { DeadLetterModule } from './dead-letter/dead-letter.module';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: { colorize: true, singleLine: true },
+              }
+            : undefined, // in production, emit raw JSON logs — pretty-printing is a dev convenience only
+        level: process.env.LOG_LEVEL || 'info',
+        redact: ['req.headers.authorization'], // never log secrets/tokens, even by accident
+        autoLogging: {
+          ignore: (req) => req.url === '/health', // don't spam logs with health check pings
+        },
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
