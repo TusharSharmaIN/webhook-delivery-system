@@ -56,10 +56,7 @@ function App() {
     (r) => r.customerId === activeId,
   );
 
-  const setupComplete =
-    !!activeCustomer &&
-    !!receiverConfig.data?.hasSecret &&
-    activeSubscriptions.length > 0;
+  const setupComplete = !!activeCustomer && activeSubscriptions.length > 0;
 
   if (
     customers.data === null ||

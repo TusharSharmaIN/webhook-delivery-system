@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { receiverConfigApi } from "../api/resources";
 import type { FailureMode, ReceiverConfig } from "../types";
-import { StatusBadge } from "./StatusBadge";
 
 const MODES: { value: FailureMode; label: string }[] = [
   { value: "none", label: "Healthy" },
@@ -32,9 +31,11 @@ export function ReceiverControl({ config, onChanged }: ReceiverControlProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-[var(--color-text-dim)]">
-          Secret configured
+          Customers with secrets synced
         </span>
-        <StatusBadge status={config?.hasSecret ? "up" : "down"} />
+        <span className="text-xs font-mono text-[var(--color-text)]">
+          {config?.knownCustomers ?? 0}
+        </span>
       </div>
 
       <div className="space-y-2">

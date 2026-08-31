@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StepIndicator } from "./StepIndicator";
-import { CustomerPicker } from "./CustomerPicker";
+import { CustomerPicker } from "./CustomerPIcker";
 import { Panel } from "../Panel";
 import { SubscriptionForm } from "../SubscriptionForm";
 import { SubscriptionList } from "../SubscriptionList";
