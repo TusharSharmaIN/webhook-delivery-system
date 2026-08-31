@@ -6,8 +6,10 @@ import { json } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Capture raw body for HMAC signature verification, while still
-  // parsing JSON normally for any endpoint that needs req.body.
+  app.enableCors({
+    origin: true,
+  });
+
   app.use(
     json({
       verify: (req: any, res, buf) => {

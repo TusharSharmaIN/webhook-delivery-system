@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Query, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Query,
+  Body,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -23,5 +31,11 @@ export class SubscriptionsController {
     return eventType
       ? this.subscriptionsService.findByEventType(eventType)
       : this.subscriptionsService.findAll();
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Remove a subscription' })
+  remove(@Param('id') id: string) {
+    return this.subscriptionsService.remove(id);
   }
 }

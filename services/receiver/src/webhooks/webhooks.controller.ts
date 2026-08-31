@@ -4,7 +4,7 @@ import type { Request, Response } from 'express';
 import { ReceiverConfigService } from '../config/receiver-config.service';
 import { verifySignature } from '../common/signing.util';
 
-const seenEventIds = new Set<string>(); // simple in-memory dedupe store
+const seenEventIds = new Set<string>();
 
 @ApiTags('webhooks')
 @Controller('webhooks')
@@ -18,15 +18,9 @@ export class WebhooksController {
   async receive(@Req() req: Request, @Res() res: Response) {
     const mode = this.configService.getFailureMode();
 
-    if (mode === 'down') {
-      // simulate connection refused / total unavailability by not responding in time
-      return; // caller will eventually timeout
-    }
-
-    if (mode === 'slow') {
-      await new Promise((resolve) => setTimeout(resolve, 8000)); // longer than delivery worker's 5s timeout
-    }
-
+    if (mode === 'down') return;
+    if (mode === 'slow')
+      await new Promise((resolve) => setTimeout(resolve, 8000));
     if (mode === 'always-fail') {
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -36,12 +30,14 @@ export class WebhooksController {
     const rawBody = (req as any).rawBody?.toString('utf8');
     const signature = req.headers['x-webhook-signature'] as string;
     const eventId = req.headers['x-event-id'] as string;
-    const secret = this.configService.getSecret();
+    const customerId = req.headers['x-customer-id'] as string;
+
+    const secret = customerId ? this.configService.getSecret(customerId) : null;
 
     if (!secret) {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ error: 'No secret configured on receiver' });
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        error: `No secret registered for customer ${customerId}`,
+      });
     }
 
     if (
@@ -55,14 +51,15 @@ export class WebhooksController {
     }
 
     if (eventId && seenEventIds.has(eventId)) {
-      console.log(`Duplicate event ${eventId} — deduped, not reprocessing`);
       return res
         .status(HttpStatus.OK)
         .json({ message: 'Duplicate, already processed' });
     }
     if (eventId) seenEventIds.add(eventId);
 
-    console.log(`✅ Received valid webhook, event ${eventId}:`, rawBody);
+    console.log(
+      `✅ Received valid webhook from customer ${customerId}, event ${eventId}`,
+    );
     return res.status(HttpStatus.OK).json({ message: 'Received' });
   }
 }

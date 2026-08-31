@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiProperty } from '@nestjs/swagger';
 import { IsString, IsIn } from 'class-validator';
-import {
-  ReceiverConfigService,
-  type FailureMode,
-} from './receiver-config.service';
+import { ReceiverConfigService } from './receiver-config.service';
+import type { FailureMode } from './receiver-config.service';
 
 class SetSecretDto {
+  @ApiProperty({ example: 'customer-uuid-here' })
+  @IsString()
+  customerId: string;
+
   @ApiProperty({
     example: 'a099dee62e12841c294fa3d3c4d82d368ecb533f33d62d0e6a72ca3602b47002',
   })
@@ -30,12 +32,11 @@ export class ConfigController {
 
   @Post('secret')
   @ApiOperation({
-    summary:
-      'Set the expected HMAC secret (simulates a customer knowing their key)',
+    summary: "Register a customer's secret (simulates them saving their key)",
   })
   setSecret(@Body() dto: SetSecretDto) {
-    this.configService.setSecret(dto.secret);
-    return { message: 'Secret updated' };
+    this.configService.setSecret(dto.customerId, dto.secret);
+    return { message: 'Secret registered' };
   }
 
   @Post('failure-mode')
@@ -51,7 +52,7 @@ export class ConfigController {
   @ApiOperation({ summary: 'View current receiver config' })
   getConfig() {
     return {
-      hasSecret: !!this.configService.getSecret(),
+      knownCustomers: this.configService.getKnownCustomerIds().length,
       failureMode: this.configService.getFailureMode(),
     };
   }

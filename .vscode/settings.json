@@ -16,6 +16,13 @@
     {
       "folderPath": "webhook-delivery-system/services/core-api/",
       "color": "foldercolorizer.color_5f5fff"
+    },
+    {
+      "folderPath": "webhook-delivery-system/frontend/",
+      "color": "foldercolorizer.color_00ffff"
     }
-  ]
+  ],
+  "files.exclude": {
+    "**/node_modules": true
+  }
 }

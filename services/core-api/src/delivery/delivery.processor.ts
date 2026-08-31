@@ -59,6 +59,7 @@ export class DeliveryProcessor extends WorkerHost {
           headers: {
             'Content-Type': 'application/json',
             'X-Event-Id': eventId,
+            'X-Customer-Id': customerId,
             'X-Webhook-Signature': signature,
           },
           timeout: 5000,

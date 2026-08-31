@@ -24,12 +24,11 @@ export class DeadLetterController {
       'List permanently failed deliveries (exhausted all retry attempts)',
   })
   async listDeadLetters() {
-    // Our own audit log is the source of truth for "permanently dead" —
-    // BullMQ's internal failed-job set is a secondary/raw view of the same thing.
     const deadAttempts = await this.attemptsRepo.find({
       where: { status: DeliveryStatus.DEAD },
       relations: { event: true, customer: true },
       order: { attemptedAt: 'DESC' },
+      take: 20,
     });
 
     return deadAttempts.map((attempt) => ({
@@ -61,6 +60,28 @@ export class DeadLetterController {
       successRate:
         total > 0 ? Math.round((delivered / total) * 10000) / 100 : 0,
     };
+  }
+
+  @Get('recent')
+  @ApiOperation({ summary: 'Most recent delivery attempts, any status' })
+  async getRecent() {
+    const attempts = await this.attemptsRepo.find({
+      relations: { event: true, customer: true },
+      order: { attemptedAt: 'DESC' },
+      take: 20,
+    });
+
+    return attempts.map((attempt) => ({
+      eventId: attempt.eventId,
+      eventType: attempt.event.type,
+      customerId: attempt.customerId,
+      customerName: attempt.customer.name,
+      attemptNumber: attempt.attemptNumber,
+      status: attempt.status,
+      responseCode: attempt.responseCode,
+      error: attempt.error,
+      attemptedAt: attempt.attemptedAt,
+    }));
   }
 
   @Get(':eventId/history')

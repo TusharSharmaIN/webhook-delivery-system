@@ -5,10 +5,12 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Unique,
 } from 'typeorm';
 import { Customer } from '../customers/customer.entity';
 
 @Entity('subscriptions')
+@Unique(['customerId', 'eventType'])
 export class Subscription {
   @PrimaryColumn('uuid', { default: () => 'gen_random_uuid()' })
   id: string;

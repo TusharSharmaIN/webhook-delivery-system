@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -24,5 +24,13 @@ export class CustomersController {
   @ApiOperation({ summary: 'Get a single customer by id' })
   findOne(@Param('id') id: string) {
     return this.customersService.findOne(id);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a customer and all their subscriptions/delivery history',
+  })
+  remove(@Param('id') id: string) {
+    return this.customersService.remove(id);
   }
 }

@@ -4,15 +4,23 @@ export type FailureMode = 'none' | 'always-fail' | 'slow' | 'down';
 
 @Injectable()
 export class ReceiverConfigService {
-  private secret: string | null = null;
+  private secrets = new Map<string, string>(); // customerId -> secret
   private failureMode: FailureMode = 'none';
 
-  setSecret(secret: string) {
-    this.secret = secret;
+  setSecret(customerId: string, secret: string) {
+    this.secrets.set(customerId, secret);
   }
 
-  getSecret(): string | null {
-    return this.secret;
+  getSecret(customerId: string): string | null {
+    return this.secrets.get(customerId) ?? null;
+  }
+
+  hasAnySecret(): boolean {
+    return this.secrets.size > 0;
+  }
+
+  getKnownCustomerIds(): string[] {
+    return [...this.secrets.keys()];
   }
 
   setFailureMode(mode: FailureMode) {

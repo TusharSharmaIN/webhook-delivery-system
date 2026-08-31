@@ -2,8 +2,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { randomUUID } from 'crypto';
 import { firstValueFrom } from 'rxjs';
+import { randomUUID } from 'crypto';
 
 const SAMPLE_EVENT_TYPES = ['order.created', 'user.signup', 'payment.failed'];
 
@@ -12,6 +12,7 @@ export class EventProducerService implements OnModuleInit {
   private readonly logger = new Logger(EventProducerService.name);
   private readonly coreApiUrl: string;
   private readonly intervalMs: number;
+  private paused = false;
 
   constructor(
     private readonly config: ConfigService,
@@ -26,12 +27,22 @@ export class EventProducerService implements OnModuleInit {
     this.logger.log(
       `Event producer starting: firing an event every ${this.intervalMs}ms to ${this.coreApiUrl}`,
     );
-
     const interval = setInterval(() => this.fireRandomEvent(), this.intervalMs);
     this.schedulerRegistry.addInterval('event-producer-tick', interval);
   }
 
+  setPaused(paused: boolean) {
+    this.paused = paused;
+    this.logger.log(paused ? 'Auto-firing paused' : 'Auto-firing resumed');
+  }
+
+  isPaused(): boolean {
+    return this.paused;
+  }
+
   async fireRandomEvent() {
+    if (this.paused) return;
+
     const type =
       SAMPLE_EVENT_TYPES[Math.floor(Math.random() * SAMPLE_EVENT_TYPES.length)];
     const payload = this.buildPayload(type);

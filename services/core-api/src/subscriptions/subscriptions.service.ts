@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { Subscription } from './subscription.entity';
 import { Customer } from '../customers/customer.entity';
 
@@ -22,7 +26,16 @@ export class SubscriptionsService {
       customerId,
       eventType,
     });
-    return this.subscriptionsRepo.save(subscription);
+    try {
+      return await this.subscriptionsRepo.save(subscription);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).code === '23505') {
+        throw new ConflictException(
+          `${customer.name} is already subscribed to ${eventType}`,
+        );
+      }
+      throw err;
+    }
   }
 
   async findAll(): Promise<Subscription[]> {
@@ -34,5 +47,10 @@ export class SubscriptionsService {
       where: { eventType },
       relations: { customer: true },
     });
+  }
+
+  async remove(id: string): Promise<{ deleted: boolean }> {
+    const result = await this.subscriptionsRepo.delete(id);
+    return { deleted: (result.affected ?? 0) > 0 };
   }
 }
