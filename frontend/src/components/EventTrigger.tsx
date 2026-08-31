@@ -60,6 +60,11 @@ export function EventTrigger({ subscriptions, onFired }: EventTriggerProps) {
 
   return (
     <div className="space-y-3">
+      <p className="text-xs text-[var(--color-text-dim)]">
+        Firing an event notifies <em>every</em> customer subscribed to it, like
+        a real webhook system. If others are subscribed too, they'll be listed
+        alongside you.
+      </p>
       <div className="grid grid-cols-1 gap-2">
         {eventTypes.map((type) => (
           <button
