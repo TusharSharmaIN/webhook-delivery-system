@@ -32,7 +32,9 @@ export class WebhooksController {
     const eventId = req.headers['x-event-id'] as string;
     const customerId = req.headers['x-customer-id'] as string;
 
-    const secret = customerId ? this.configService.getSecret(customerId) : null;
+    const secret = customerId
+      ? await this.configService.getSecret(customerId)
+      : null;
 
     if (!secret) {
       return res.status(HttpStatus.BAD_REQUEST).json({

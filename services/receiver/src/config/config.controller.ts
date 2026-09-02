@@ -50,9 +50,9 @@ export class ConfigController {
 
   @Get()
   @ApiOperation({ summary: 'View current receiver config' })
-  getConfig() {
+  async getConfig() {
     return {
-      knownCustomers: this.configService.getKnownCustomerIds().length,
+      knownCustomers: await this.configService.countKnown(),
       failureMode: this.configService.getFailureMode(),
     };
   }

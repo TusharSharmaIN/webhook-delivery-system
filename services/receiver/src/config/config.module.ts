@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ReceiverConfigService } from './receiver-config.service';
 import { ConfigController } from './config.controller';
+import { SecretsRepository } from './secrets.repository';
 
 @Module({
-  providers: [ReceiverConfigService],
+  providers: [ReceiverConfigService, SecretsRepository],
   controllers: [ConfigController],
-  exports: [ReceiverConfigService], // webhooks module will need this
+  exports: [ReceiverConfigService],
 })
 export class ConfigModule {}

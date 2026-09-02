@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { SecretsRepository } from './secrets.repository';
 
 export type FailureMode = 'none' | 'always-fail' | 'slow' | 'down';
 
 @Injectable()
 export class ReceiverConfigService {
-  private secrets = new Map<string, string>(); // customerId -> secret
-  private failureMode: FailureMode = 'none';
+  private failureMode: FailureMode = 'none'; // fine to reset on restart — low stakes
 
-  setSecret(customerId: string, secret: string) {
-    this.secrets.set(customerId, secret);
+  constructor(private readonly secretsRepo: SecretsRepository) {}
+
+  setSecret(customerId: string, secret: string): Promise<void> {
+    return this.secretsRepo.setSecret(customerId, secret);
   }
 
-  getSecret(customerId: string): string | null {
-    return this.secrets.get(customerId) ?? null;
+  getSecret(customerId: string): Promise<string | null> {
+    return this.secretsRepo.getSecret(customerId);
   }
 
-  hasAnySecret(): boolean {
-    return this.secrets.size > 0;
-  }
-
-  getKnownCustomerIds(): string[] {
-    return [...this.secrets.keys()];
+  countKnown(): Promise<number> {
+    return this.secretsRepo.countKnown();
   }
 
   setFailureMode(mode: FailureMode) {

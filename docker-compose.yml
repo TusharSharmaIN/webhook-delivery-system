@@ -70,12 +70,18 @@ services:
     restart: unless-stopped
     environment:
       PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: webhook
+      DB_PASSWORD: webhook
+      DB_NAME: webhook_delivery
     ports:
       - "3002:3002"
     volumes:
       - ./services/receiver:/app
       - receiver-node-modules:/app/node_modules
     depends_on:
+      - postgres
       - core-api
 
 volumes:
