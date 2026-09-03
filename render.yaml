@@ -1,0 +1,66 @@
+databases:
+  - name: webhook-db
+    plan: free
+    databaseName: webhook_delivery
+    user: webhook
+
+services:
+  - type: keyvalue
+    name: webhook-redis
+    plan: free
+    ipAllowList: []
+
+  - type: web
+    name: core-api
+    runtime: node
+    plan: free
+    rootDir: services/core-api
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: webhook-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: webhook-db, property: port }
+      - key: DB_USER
+        fromDatabase: { name: webhook-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: webhook-db, property: password }
+      - key: DB_NAME
+        fromDatabase: { name: webhook-db, property: database }
+      - key: REDIS_HOST
+        fromService: { name: webhook-redis, type: keyvalue, property: host }
+      - key: REDIS_PORT
+        fromService: { name: webhook-redis, type: keyvalue, property: port }
+
+  - type: web
+    name: event-source
+    runtime: node
+    plan: free
+    rootDir: services/event-source
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: CORE_API_URL
+        value: https://core-api.onrender.com
+      - key: EVENT_INTERVAL_MS
+        value: 10000
+
+  - type: web
+    name: receiver
+    runtime: node
+    plan: free
+    rootDir: services/receiver
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: webhook-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: webhook-db, property: port }
+      - key: DB_USER
+        fromDatabase: { name: webhook-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: webhook-db, property: password }
+      - key: DB_NAME
+        fromDatabase: { name: webhook-db, property: database }
