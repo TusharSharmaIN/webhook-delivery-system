@@ -12,7 +12,7 @@ export class EventProducerService implements OnModuleInit {
   private readonly logger = new Logger(EventProducerService.name);
   private readonly coreApiUrl: string;
   private readonly intervalMs: number;
-  private paused = false;
+  private paused = true;
 
   constructor(
     private readonly config: ConfigService,
