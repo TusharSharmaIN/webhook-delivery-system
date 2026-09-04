@@ -28,10 +28,8 @@ services:
         fromDatabase: { name: webhook-db, property: password }
       - key: DB_NAME
         fromDatabase: { name: webhook-db, property: database }
-      - key: REDIS_HOST
-        fromService: { name: webhook-redis, type: keyvalue, property: host }
-      - key: REDIS_PORT
-        fromService: { name: webhook-redis, type: keyvalue, property: port }
+      - key: REDIS_URL
+        sync: false
 
   - type: web
     name: event-source

@@ -50,12 +50,18 @@ import { DeadLetterModule } from './dead-letter/dead-letter.module';
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          host: config.get('REDIS_HOST', 'redis'),
-          port: Number(config.get('REDIS_PORT', 6379)),
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const redisUrl = config.get('REDIS_URL');
+        return {
+          connection: redisUrl
+            ? { url: redisUrl } // production: Upstash, single URL
+            : {
+                host: config.get('REDIS_HOST', 'redis'),
+                port: Number(config.get('REDIS_PORT', 6379)),
+              }, // local Docker
+          prefix: 'whs', // namespaces every key as whs:* — safe to share Redis with other projects
+        };
+      },
     }),
     HealthModule,
     CustomersModule,
