@@ -15,6 +15,7 @@ import {
   useProducerStatus,
 } from "./components/wizard/ProducerToggle";
 import { FireAndWatch } from "./components/FireAndWatch";
+import { useOnboarded } from "./hooks/useOnboarded";
 
 function App() {
   const [editing, setEditing] = useState(false);
@@ -26,15 +27,9 @@ function App() {
   const receiverConfig = useManualFetch(
     useCallback(() => receiverConfigApi.get(), []),
   );
-  const stats = usePolling(
-    useCallback(() => deadLetterApi.stats(), []),
-    5000,
-  );
-  const recent = usePolling(
-    useCallback(() => deadLetterApi.recent(), []),
-    5000,
-  );
+
   const producer = useProducerStatus();
+  const { onboarded, setOnboarded } = useOnboarded();
 
   useEffect(() => {
     customers.refresh();
@@ -52,11 +47,26 @@ function App() {
   const activeSubscriptions = (subscriptions.data ?? []).filter(
     (s) => s.customerId === activeId,
   );
+
+  const setupComplete = !!activeCustomer && activeSubscriptions.length > 0;
+
+  const startStep = editing ? 1 : !activeCustomer ? 1 : 2;
+  const showWizard = editing || !onboarded;
+
+  const stats = usePolling(
+    useCallback(() => deadLetterApi.stats(), []),
+    5000,
+    !showWizard,
+  );
+  const recent = usePolling(
+    useCallback(() => deadLetterApi.recent(), []),
+    5000,
+    !showWizard,
+  );
+
   const activeRecent = (recent.data ?? []).filter(
     (r) => r.customerId === activeId,
   );
-
-  const setupComplete = !!activeCustomer && activeSubscriptions.length > 0;
 
   if (
     customers.data === null ||
@@ -71,9 +81,6 @@ function App() {
       </div>
     );
   }
-
-  const startStep = editing ? 1 : !activeCustomer ? 1 : 2;
-  const showWizard = editing || !setupComplete;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] font-sans">
@@ -121,7 +128,10 @@ function App() {
             onReceiverChanged={refreshSetup}
             onSubscriptionsChanged={refreshSetup}
             onSynced={setActiveId}
-            onDone={() => setEditing(false)}
+            onDone={() => {
+              setOnboarded(true);
+              setEditing(false);
+            }}
           />
         ) : (
           <FireAndWatch
