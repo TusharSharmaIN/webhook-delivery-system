@@ -8,6 +8,8 @@ import { DeliveryAttempt } from './delivery-attempts/delivery-attempt.entity';
 
 config();
 
+const isRemote = process.env.DB_HOST?.includes('neon.tech');
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
@@ -15,6 +17,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'webhook',
   password: process.env.DB_PASSWORD || 'webhook',
   database: process.env.DB_NAME || 'webhook_delivery',
+  ssl: isRemote ? { rejectUnauthorized: false } : false,
   entities: [Customer, Subscription, Event, DeliveryAttempt],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,

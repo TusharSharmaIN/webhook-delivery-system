@@ -1,15 +1,4 @@
-databases:
-  - name: webhook-db
-    plan: free
-    databaseName: webhook_delivery
-    user: webhook
-
 services:
-  - type: keyvalue
-    name: webhook-redis
-    plan: free
-    ipAllowList: []
-
   - type: web
     name: core-api
     runtime: node
@@ -19,15 +8,15 @@ services:
     startCommand: npm run start:prod
     envVars:
       - key: DB_HOST
-        fromDatabase: { name: webhook-db, property: host }
+        sync: false
       - key: DB_PORT
-        fromDatabase: { name: webhook-db, property: port }
+        sync: false
       - key: DB_USER
-        fromDatabase: { name: webhook-db, property: user }
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase: { name: webhook-db, property: password }
+        sync: false
       - key: DB_NAME
-        fromDatabase: { name: webhook-db, property: database }
+        sync: false
       - key: REDIS_URL
         sync: false
 
@@ -40,7 +29,7 @@ services:
     startCommand: npm run start:prod
     envVars:
       - key: CORE_API_URL
-        value: https://core-api.onrender.com
+        sync: false
       - key: EVENT_INTERVAL_MS
         value: 10000
 
@@ -53,12 +42,12 @@ services:
     startCommand: npm run start:prod
     envVars:
       - key: DB_HOST
-        fromDatabase: { name: webhook-db, property: host }
+        sync: false
       - key: DB_PORT
-        fromDatabase: { name: webhook-db, property: port }
+        sync: false
       - key: DB_USER
-        fromDatabase: { name: webhook-db, property: user }
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase: { name: webhook-db, property: password }
+        sync: false
       - key: DB_NAME
-        fromDatabase: { name: webhook-db, property: database }
+        sync: false

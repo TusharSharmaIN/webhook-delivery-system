@@ -36,16 +36,21 @@ import { DeadLetterModule } from './dead-letter/dead-letter.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST'),
-        port: Number(config.get('DB_PORT')),
-        username: config.get('DB_USER'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: false,
-      }),
+      useFactory: (config: ConfigService) => {
+        const host = config.get('DB_HOST');
+        const isRemote = host?.includes('neon.tech');
+        return {
+          type: 'postgres',
+          host,
+          port: Number(config.get('DB_PORT')),
+          username: config.get('DB_USER'),
+          password: config.get('DB_PASSWORD'),
+          database: config.get('DB_NAME'),
+          ssl: isRemote ? { rejectUnauthorized: false } : false,
+          autoLoadEntities: true,
+          synchronize: false,
+        };
+      },
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
