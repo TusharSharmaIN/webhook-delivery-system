@@ -25,7 +25,7 @@ export function CustomerPicker({
   const [creating, setCreating] = useState(customers.length === 0);
   const [name, setName] = useState("");
   const [webhookUrl, setWebhookUrl] = useState(
-    "http://receiver:3002/webhooks/incoming",
+    `${import.meta.env.VITE_RECEIVER_URL}/webhooks/incoming`,
   );
   const [submitting, setSubmitting] = useState(false);
 
